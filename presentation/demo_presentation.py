@@ -16,19 +16,18 @@ from pathlib import Path
 # Add src to path for imports
 sys.path.append(str(Path(__file__).parent / 'src'))
 
-from data_preprocessing.property_preprocessor import PropertyDataPreprocessor
 from similarity_search.property_similarity import PropertySimilaritySearch
 
 class PropertyDemoPresentation:
     def __init__(self):
         """Initialize the demo presentation system."""
         self.properties_df = None
-        self.preprocessor = None
         self.similarity_search = None
+        self.feature_columns = []
         self.demo_properties = []
         
     def load_system(self):
-        """Load the trained system for demonstration."""
+        """Load and initialize the system for demonstration."""
         print("🏠 PROPERTY RECOMMENDATION SYSTEM - LIVE DEMO")
         print("=" * 55)
         
@@ -44,17 +43,25 @@ class PropertyDemoPresentation:
         self.properties_df = pd.read_csv(data_path)
         print(f"   ✓ Loaded {len(self.properties_df):,} properties")
         
-        # Load trained models
-        print("   ✓ Loading ML models...")
+        # Initialize and train models
+        print("   ✓ Initializing ML models...")
         try:
-            self.preprocessor = PropertyDataPreprocessor()
-            self.preprocessor.load('data/models/preprocessor.pkl')
+            # Initialize similarity search
+            self.similarity_search = PropertySimilaritySearch(algorithm='sklearn', n_neighbors=10)
             
-            self.similarity_search = PropertySimilaritySearch()
-            self.similarity_search.load('data/models/similarity_search.pkl')
-            print("   ✓ Models loaded successfully")
+            # Prepare features
+            self.feature_columns = [col for col in self.properties_df.columns 
+                                  if col not in ['property_id', 'appraisal_id'] and 
+                                  pd.api.types.is_numeric_dtype(self.properties_df[col])]
+            
+            print(f"   ✓ Using {len(self.feature_columns)} numerical features")
+            
+            # Fit the model
+            print("   ✓ Training similarity model...")
+            self.similarity_search.fit(self.properties_df, self.feature_columns)
+            print("   ✓ Models trained successfully")
         except Exception as e:
-            print(f"   ❌ Error loading models: {e}")
+            print(f"   ❌ Error initializing models: {e}")
             return False
             
         # Prepare demo properties

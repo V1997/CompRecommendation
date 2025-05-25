@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 
 # Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 from data_preprocessing.property_preprocessor import PropertyDataPreprocessor
 from similarity_search.property_similarity import PropertySimilaritySearch

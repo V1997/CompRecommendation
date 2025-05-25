@@ -11,7 +11,7 @@ import numpy as np
 import pickle
 
 # Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 from data_preprocessing.property_preprocessor import PropertyDataPreprocessor
 from similarity_search.property_similarity import PropertySimilaritySearch
@@ -34,7 +34,8 @@ def validate_complete_pipeline():
     print(f"   • Columns with missing values: {len(columns_with_nulls)}")
     if len(columns_with_nulls) > 0:
         print(f"   • Max missing values in any column: {columns_with_nulls.max()}")
-      # Step 2: Load preprocessor and show feature info
+    
+    # Step 2: Load preprocessor and show feature info
     print("\n2. Preprocessor Analysis:")
     with open('data/models/preprocessor.pkl', 'rb') as f:
         preprocessor = pickle.load(f)
@@ -71,10 +72,10 @@ def validate_complete_pipeline():
     
     # Step 4: Demonstrate recommendations
     print("\n4. Property Recommendation Examples:")
-      # Select diverse test properties
+    
+    # Select diverse test properties with safe column lookups
     test_cases = []
     
-    # Safe column lookups
     if 'sale_price_per_sqft' in properties_df.columns and not properties_df['sale_price_per_sqft'].isna().all():
         test_cases.extend([
             {"name": "High-end property", "index": properties_df['sale_price_per_sqft'].idxmax()},
@@ -100,7 +101,8 @@ def validate_complete_pipeline():
             
             # Get recommendations
             recommendations = similarity_search.search(subject_property, k=5)
-              # Display subject property info
+            
+            # Display subject property info
             key_features = ['gla', 'year_built', 'bedrooms', 'num_baths', 'sale_price_per_sqft']
             available_features = [f for f in key_features if f in subject_property.index and pd.notna(subject_property[f])]
             
@@ -201,19 +203,17 @@ def demonstrate_recommendation_api():
     
     # Load the system
     properties_df = pd.read_csv('data/processed/properties_preprocessed.csv')
-    similarity_search = PropertySimilaritySearch.load('data/models/similarity_search_test.pkl')
+    try:
+        similarity_search = PropertySimilaritySearch.load('data/models/similarity_search_test.pkl')
+    except:
+        print("Loading fallback similarity search...")
+        similarity_search = PropertySimilaritySearch(algorithm='sklearn', n_neighbors=10)
+        feature_columns = [col for col in properties_df.columns 
+                          if col not in ['property_id', 'appraisal_id'] and pd.api.types.is_numeric_dtype(properties_df[col])]
+        similarity_search.fit(properties_df, feature_columns)
     
     def get_property_recommendations(property_id, num_recommendations=5):
-        """
-        Get property recommendations for a given property ID.
-        
-        Args:
-            property_id: ID of the subject property
-            num_recommendations: Number of recommendations to return
-            
-        Returns:
-            List of recommended properties with similarity scores
-        """
+        """Get property recommendations for a given property ID."""
         try:
             # Find the subject property
             if 'property_id' in properties_df.columns:
@@ -229,7 +229,8 @@ def demonstrate_recommendation_api():
             
             # Get recommendations
             recommendations = similarity_search.search(subject_property, k=num_recommendations)
-              # Format results
+            
+            # Format results
             results = []
             for idx, row in recommendations.iterrows():
                 rec_property = properties_df.loc[idx]
@@ -258,7 +259,8 @@ def demonstrate_recommendation_api():
         print(f"Error: {result['error']}")
     else:
         print("API Response:")
-        print(f"Found {len(result['recommendations'])} recommendations:")        for i, rec in enumerate(result['recommendations'], 1):
+        print(f"Found {len(result['recommendations'])} recommendations:")
+        for i, rec in enumerate(result['recommendations'], 1):
             print(f"  {i}. Property {rec['property_id']} (similarity: {rec['similarity_score']:.3f})")
             if rec['gla']:
                 print(f"     Square footage: {rec['gla']}")
