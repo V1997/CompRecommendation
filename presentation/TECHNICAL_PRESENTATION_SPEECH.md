@@ -71,10 +71,10 @@ Thank you for your attention. This project demonstrates how thoughtful engineeri
 6. **Professional Tone**: Balanced between technical and accessible
 
 ### Visual Aids Suggestions:
-- **System architecture diagram** → `presentation/system_architecture_diagram.png`
-- **Performance metrics dashboard** → `presentation/performance_dashboard.png` 
-- **Before/after comparison of data quality** → `presentation/data_quality_comparison.png`
-- **Live demo visualization** → `presentation/live_demo_visualization.png`
+- **System architecture diagram** → `presentation/images/system_architecture_diagram.png`
+- **Performance metrics dashboard** → `presentation/images/performance_dashboard.png` 
+- **Before/after comparison of data quality** → `presentation/images/data_quality_comparison.png`
+- **Live demo visualization** → `presentation/images/live_demo_visualization.png`
 
 ### How to Use the Visual Aids:
 
@@ -97,3 +97,4 @@ Thank you for your attention. This project demonstrates how thoughtful engineeri
    - Use for interactive property recommendation demo
    - Show real similarity scoring in action
    - Demonstrate the radar chart feature comparison
+
